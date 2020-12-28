@@ -1,0 +1,390 @@
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+usingnamespace std;
+enum contactGroupType {// used in extPersonType
+FAMILY,
+FRIEND,
+BUSINESS,
+UNFILLED
+};
+class addressType
+{
+private:
+string st_address;
+string city;
+string state;
+int zip;
+public:
+void print(string, string, string, int)const;
+void setStreet(string);
+string getStreet()const;
+void setCity(string);
+string getCity()const;
+void setState(string);
+string getState()const;
+void setZip(int);
+int getZip()const;
+void set(string, string, string, int);// set all address fields
+string get()const;// get address as one concatenated string
+addressType();
+// ~addressType();
+};
+class personType
+{
+private:
+string firstName;
+string lastName;
+public:
+void print()const;
+void setName(string first, string last);
+string getFirstName()const;
+string getLastName()const;
+string get()const;// return First Last names concatenated
+personType & operator=(const personType &);
+personType(string, string);
+personType();
+};
+class dateType
+{
+private:
+int dMonth;
+int dDay;
+int dYear;
+public:
+void setDate(int month, int day, int year);
+int getDay()const;
+int getMonth()const;
+int getYear()const;
+void print()const;
+string get()const;// return string representation as DD/MM/YYYY
+dateType & operator=(const dateType & d);
+dateType(int, int, int);
+dateType();
+};
+class extPersonType:public personType {
+private:
+addressType address;// added members
+dateType birthday;
+contactGroupType group;
+string phone;
+public:
+// methods
+void setPhone(string);
+string getPhone()const;
+void setGroup(contactGroupType);
+contactGroupType getGroup()const;
+void setBirthday(int, int, int);
+dateType getBirthday()const;
+void print();
+string get()const;// return string representation of ext person type
+extPersonType & operator=(const extPersonType & p);
+string groupToString(contactGroupType)const;
+contactGroupType extPersonType::stringToGroup(string)const;
+// constructors
+extPersonType();
+extPersonType(string first, string last);
+};
+// because we have no arrayListType, we are using our own
+// implementation with a small subset of functions
+class arrayListType {
+extPersonType array[500];
+int size;
+public:
+arrayListType();
+extPersonType & operator[](int i);
+void removeLast();// remove last element
+void add (const extPersonType &);// add new element
+int getSize()const;// get array size
+};
+class addressBookType :public arrayListType {
+private:
+staticconstchar FS='\t';// field separator in file (TAB char)
+int current;// current position
+string fileName;// filename
+fstream fileStream;// file as fstream
+/* filiters */
+contactGroupType fltGroup;
+string fltFromLast, fltToLast;
+dateType fltFromDate, fltTiDate;
+/* flags for effective filters */
+bool fltStatus, fltLast, fltDateRange, fltDate;
+/* field numbering in the file */
+staticconstint _first=0;
+staticconstint _last=1;
+staticconstint _street=2;
+staticconstint _city=3;
+staticconstint _state=4;
+staticconstint _phone=5;
+staticconstint _zip=6;
+staticconstint _year=7;
+staticconstint _month=8;
+staticconstint _day=9;
+staticconstint _group=10;
+staticconstint _end=_group;
+public:
+addressBookType();
+bool readFile(string);// read file into addressBook array
+bool writeFile(string);// pass filename, write to file
+void reset();// reset 'current' position
+extPersonType * getNext();// allows to navigate in forward direction
+/* by group name */
+void setFilterStatus(contactGroupType);
+/* by last name */
+void setFilterLastname(string from, string to);// define range
+/* by birthday */
+void setFilterBirthday(dateType from, dateType to);
+/* clear all filters */
+void clearFilters();
+void print(int i);// print personal data of [i] person
+};
+// Main program
+int main(){
+return0;
+}
+/*****************implementation of print & set function*****/
+// constructor with parameters
+addressType::addressType(){
+st_address="";
+city="";
+state="";
+zip=0;
+}
+void addressType::set(string addr, string city, string state, int zip){
+this->st_address=addr;
+this->city=city;
+this->state=state;
+this->zip=zip;
+}
+void addressType::setStreet(string street)
+{
+this->st_address=street;
+}
+string addressType::getStreet()const
+{
+return this->st_address;
+}
+void addressType::setCity(string street)
+{
+this->city=street;
+}
+string addressType::getState()const
+{
+return this->state;
+}
+void addressType::setState(string street)
+{
+this->st_address=street;
+}
+void addressType::setZip(int code)
+{
+this->zip=code;
+}
+int addressType::getZip()const
+{
+return this->zip;
+}
+/* personType implementation */
+personType::personType(){// constructor
+this->setName("", "");
+}
+personType::personType(string first, string last){// constructor
+this->setName(first, last);
+}
+void personType::setName(string first, string last){
+firstName=first;
+lastName=last;
+}
+string personType::getFirstName()const{
+return firstName;
+}
+string personType::getLastName()const{
+return lastName;
+}
+void personType::print()const{
+cout<< get()<<" ";
+}
+string personType::get()const{
+return firstName +" "+ lastName;
+}
+personType & personType::operator=(const personType & p){
+setName(p.getFirstName(), p.getLastName());
+return*this;
+}
+/* Constructor */
+dateType::dateType(){
+setDate(1, 1, 1900);
+}
+dateType::dateType(int d, int m, int y){
+setDate(d, m, y);
+}
+int dateType::getDay()const{
+return dDay;
+}
+int dateType::getMonth()const{
+return dMonth;
+}
+int dateType::getYear()const{
+return dYear;
+}
+void dateType::setDate(int d, int m, int y){
+dDay=d;
+dMonth=m;
+dYear=y;
+}
+void dateType::print()const{
+cout<< get()<<" ";
+}
+string dateType::get()const{
+string a;
+a=dDay;
+a +="/";
+a += dMonth;
+a +="/";
+a += dYear;
+return a;
+}
+dateType & dateType::operator=(const dateType & d){
+this->dDay=d.getDay();
+this->dMonth=d.getMonth();
+this->dYear=d.getYear();
+return*this;
+}
+/* Implementation of extPersonType */
+extPersonType::extPersonType(){
+phone="";
+group=UNFILLED;
+birthday.setDate(01, 01, 1900);
+}
+extPersonType::extPersonType(string first, string last): personType::personType(first, last){
+phone="";
+group=UNFILLED;
+birthday.setDate(01, 01, 1900);
+}
+void extPersonType::setBirthday(int d, int m, int y){
+birthday.setDate(d, m, y);
+}
+dateType extPersonType::getBirthday()const{
+return birthday;
+}
+void extPersonType::setGroup(contactGroupType gr){
+group=gr;
+}
+contactGroupType extPersonType::getGroup()const{
+return group;
+}
+void extPersonType::setPhone(string ph){
+phone=ph;
+}
+string extPersonType::getPhone()const{
+return phone;
+}
+// Override parent's 'get()' add phone and birthday
+string extPersonType::get()const{
+string result;
+result = this->personType::get();
+result=result+" "+ birthday.get()+" "+ phone +" "+ groupToString(group);
+return result;
+}
+extPersonType & extPersonType::operator=(const extPersonType & p){
+// first call superclass' operator=
+(personType)*this=(personType) p;
+// now assign birthday, phone and category
+this->phone = p.getPhone();
+this->birthday = p.getBirthday();
+this->group = p.getGroup();
+return*this;
+}
+string extPersonType::groupToString(contactGroupType a)const{
+string result;
+switch(a){
+case FAMILY:
+result="FAMILY";
+break;
+case FRIEND:
+result="FRIEND";
+break;
+case BUSINESS:
+result="BUSINESS";
+break;
+case UNFILLED:
+result="";
+break;
+}
+return result;
+}
+contactGroupType extPersonType::stringToGroup(string a)const{
+contactGroupType result;
+if(a.compare("FAMILY")==0) result=FAMILY;
+elseif(a.compare("FRIEND")==0) result=FRIEND;
+elseif(a.compare("BUSINESS")==0) result=BUSINESS;
+else result=UNFILLED;
+return result;
+}
+arrayListType::arrayListType(){
+size=0;
+}
+int arrayListType::getSize()const{
+return size;
+}
+void arrayListType::removeLast(){
+size--;
+}
+void arrayListType::add(const extPersonType &p){
+array[size++]=p;
+}
+extPersonType & arrayListType::operator[](int i){
+return array[i];
+}
+/* addressBookType implementation */
+addressBookType::addressBookType(): arrayListType::arrayListType(){
+reset();
+clearFilters();
+}
+void addressBookType::reset(){
+current=0;
+}
+void addressBookType::clearFilters(){
+fltStatus=fltDate=fltLast=fltDateRange=false;
+}
+/* Read array from file, return false on error */
+bool addressBookType::readFile(string filename){
+string line;
+string fields[_end+1];// _last index of the last field
+extPersonType p;// temporary 'person' instance
+int pos1=0, pos2=0, index;
+fileStream.open(filename.c_str(), ios::in);
+reset();// reset 'current' counter
+clearFilters();
+while(!fileStream.eof()){// read line by line
+fileStream >> line;
+// fields are in the following order:
+// first, last, street, city, state, zip, phone, status, year, month, day
+for(index=0; index<=_end; index++) fields[index]="";// initialize
+pos2=0; pos1=-1;
+index=0;
+do{// read field by field
+pos1=pos2+1;// +1 is for field separator
+pos2=line.find(FS, pos1);
+fields[index]=line.substr(pos1, pos2-pos1);// get field from line
+index++;
+}while(pos2>=0 && index<=_end);
+// now fields[] are filled with fields from file
+p.setName(fields[_first], fields[_last]);
+p.setPhone(fields[_phone]);
+p.setGroup(p.stringToGroup(fields[_group]));// convert string to enum
+// set birthday
+p.getBirthday().setDate(atoi(fields[_month].c_str()),
+atoi(fields[_day].c_str()),
+atoi(fields[_year].c_str()));
+// add 'p' to array
+this->add(p);
+}// while () next line from file
+fileStream.close();
+returntrue;
+}
+// Write to file (stub)
+bool addressBookType::writeFile(string filename){
+returntrue;
+}
